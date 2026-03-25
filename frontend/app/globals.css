@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-purple: #5B2D8E;
+  --primary-orange: #E8611A;
+  --midnight-purple: #0F051D;
+  --deep-purple: #1A0B2E;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: #ffffff;
+  /* Sephora-inspired Deep Midnight Gradient */
+  background: linear-gradient(180deg, #0F051D 0%, #1A0B2E 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  font-family: 'Inter', 'Montserrat', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  /* Premium Prestige Glass Utility */
+  .prestige-glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+  }
+  
+  .btn-prestige-primary {
+    @apply bg-naturals-purple text-white px-10 py-5 rounded-full font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-naturals-purple/20;
+  }
+  
+  .btn-prestige-accent {
+    @apply bg-naturals-orange text-white px-10 py-5 rounded-full font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-naturals-orange/20;
+  }
+}
+
+/* Custom Floating Orbs */
+.floating-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+}
