@@ -150,6 +150,56 @@ async def analyze_beauty_profile(
         if img is None:
             raise HTTPException(status_code=400, detail="Invalid image data")
 
+        # --- Strict Face Detection (OpenCV Cascades) ---
+        gray_detect = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+        smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
+
+        faces = face_cascade.detectMultiScale(gray_detect, 1.3, 5)
+        if len(faces) == 0:
+            raise HTTPException(status_code=400, detail="No Face: Please position your face clearly in the frame.")
+
+        # Pick the largest face (closest to camera)
+        (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
+        face_roi_gray = gray_detect[y:y+h, x:x+w]
+        
+        # Landmark Check (Eyes, Mouth)
+        eyes = eye_cascade.detectMultiScale(face_roi_gray, 1.1, 10)
+        smiles = smile_cascade.detectMultiScale(face_roi_gray, 1.5, 20) # Stricter smile detection
+        
+        detection_score = 0.5 # Base score for face found
+        if len(eyes) >= 2: detection_score += 0.2
+        if len(smiles) >= 1: detection_score += 0.15
+        
+        # Boundary Enforcement (80% inside central UI circle)
+        img_h, img_w = img.shape[:2]
+        face_center_x = (x + w/2) / img_w
+        face_center_y = (y + h/2) / img_h
+        
+        # Check if centered (within 20% of center)
+        is_centered = abs(face_center_x - 0.5) < 0.2 and abs(face_center_y - 0.5) < 0.2
+        if is_centered: detection_score += 0.15
+        
+        # Strict Landmark Check
+        if len(eyes) < 2 or len(smiles) < 1:
+            raise HTTPException(status_code=400, detail="Face Obstructed: Ensure eyes, nose, and mouth are clearly visible.")
+        
+        # Boundary Enforcement Check
+        if not is_centered:
+            raise HTTPException(status_code=400, detail="Position Error: Please center your face within the scanning frame.")
+        
+        # Face size check (must be large enough)
+        face_width_ratio = w / img_w
+        if face_width_ratio < 0.35:
+            raise HTTPException(status_code=400, detail="Position Error: Please move closer to the camera.")
+        if face_width_ratio > 0.85:
+            raise HTTPException(status_code=400, detail="Position Error: Please move further back.")
+
+        # Final score threshold check
+        if detection_score < 0.85:
+            raise HTTPException(status_code=400, detail="No Face: Detection quality too low. Ensure proper lighting and visibility.")
+
         # --- Confidence Score Calculation (Logic-driven) ---
         confidence_score = 100
         raw_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
