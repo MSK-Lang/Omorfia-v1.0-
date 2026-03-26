@@ -16,9 +16,6 @@ export default function ScanPage() {
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [currentMetric, setCurrentMetric] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [environmentError, setEnvironmentError] = useState<string | null>(null);
-  const [isEnvironmentOk, setIsEnvironmentOk] = useState(false);
-  const [isClientReady, setIsClientReady] = useState(false);
   
   const logs = [
     "Calibrating...",
@@ -36,10 +33,6 @@ export default function ScanPage() {
     "Scalp Health", "Hair Texture", "Frizz Index", "Hair Density", "Split Ends",
     "Skin Age", "UV Damage", "Hydration", "Sebum", "Barrier Health"
   ];
-
-  useEffect(() => {
-    setIsClientReady(true);
-  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -74,85 +67,8 @@ export default function ScanPage() {
     }
   }, [isAnalyzing]);
 
-  useEffect(() => {
-    const checkEnvironment = () => {
-      if (!webcamRef.current || isAnalyzing) {
-        if (isAnalyzing) {
-          setEnvironmentError(null);
-        }
-        return;
-      };
-
-      const imageSrc = webcamRef.current.getScreenshot({width: 1280, height: 720});
-      if (!imageSrc) return;
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      const img = new Image();
-
-      img.onload = () => {
-        canvas.width = 150; // Smaller canvas for performance
-        canvas.height = 100;
-        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        try {
-          const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-          if (!imageData) return;
-
-          const data = imageData.data;
-          let brightnessSum = 0;
-          const brightnessValues = [];
-
-          for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-            const brightness = (r * 0.299 + g * 0.587 + b * 0.114); // Luminosity
-            brightnessSum += brightness;
-            brightnessValues.push(brightness);
-          }
-
-          const avgBrightness = brightnessSum / (data.length / 4);
-
-          let variance = 0;
-          for(const value of brightnessValues) {
-              variance += Math.pow(value - avgBrightness, 2);
-          }
-          const stdDev = Math.sqrt(variance / brightnessValues.length);
-
-          if (avgBrightness < 20) {
-            setEnvironmentError("Environment too dark. Please find a well-lit area.");
-            setIsEnvironmentOk(false);
-          } else if (stdDev < 12) {
-            setEnvironmentError("Low contrast detected. Camera may be covered or out of focus.");
-            setIsEnvironmentOk(false);
-          } else {
-            setEnvironmentError(null);
-            setIsEnvironmentOk(true);
-          }
-        } catch (e) {
-            // Likely a security error from getImageData, we can ignore and retry
-            console.warn("Could not analyze frame for environment check:", e);
-            setIsEnvironmentOk(true); // Default to OK if we can't check
-            setEnvironmentError(null);
-        }
-      };
-
-      img.onerror = () => {
-          setIsEnvironmentOk(true); // Default to OK if image fails to load
-          setEnvironmentError(null);
-      }
-
-      img.src = imageSrc;
-    };
-
-    const intervalId = setInterval(checkEnvironment, 1000); // Check every second
-
-    return () => clearInterval(intervalId);
-  }, [isAnalyzing]);
-
   const handleAnalyze = async () => {
-    if (isAnalyzing || !isEnvironmentOk) return;
+    if (isAnalyzing) return;
     
     setShowFlash(true);
     setTimeout(() => setShowFlash(false), 200);
@@ -176,8 +92,7 @@ export default function ScanPage() {
       };
 
       // 4. Send to Backend
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000') + '/analyze';
-      const response = await fetch(apiUrl, {
+      const response = await fetch("process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -466,9 +381,9 @@ export default function ScanPage() {
       </div>
 
       {/* 6. The Trigger - Bottom Center */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 w-full px-8 flex flex-col items-center gap-4">
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 w-full px-8 flex flex-col items-center gap-6">
         <AnimatePresence>
-          {isAnalyzing ? (
+          {isAnalyzing && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -480,41 +395,15 @@ export default function ScanPage() {
                 Analyzing Beauty DNA...
               </span>
             </motion.div>
-          ) : environmentError ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="flex items-center gap-3 px-4 py-2 rounded-full bg-naturals-orange/10 border border-naturals-orange/20 backdrop-blur-md"
-            >
-              <Activity className="w-4 h-4 text-naturals-orange" />
-              <span className="text-[11px] font-bold tracking-wide text-naturals-orange/80">
-                {environmentError}
-              </span>
-            </motion.div>
-          ) : isClientReady && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="flex items-center gap-3 px-6 py-2 rounded-full bg-green-500/10 border border-green-500/20 backdrop-blur-md"
-            >
-              <ShieldCheck className="w-4 h-4 text-green-400" />
-              <span className="text-[11px] font-bold tracking-[0.2em] text-green-400/80 uppercase italic">
-                System Ready
-              </span>
-            </motion.div>
           )}
         </AnimatePresence>
 
         <button
           onClick={handleAnalyze}
-          disabled={isAnalyzing || !isEnvironmentOk}
+          disabled={isAnalyzing}
           className={`
-            group relative px-12 py-5 rounded-full overflow-hidden transition-all duration-500 border
-            ${isAnalyzing || !isEnvironmentOk 
-              ? 'opacity-50 cursor-not-allowed border-white/10' 
-              : 'hover:bg-white/5 active:scale-95 border-white/20'}
+            group relative px-12 py-5 rounded-full overflow-hidden transition-all duration-500 border border-white/10
+            ${isAnalyzing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/5 active:scale-95'}
           `}
         >
           {/* Glass Background */}
