@@ -1,9 +1,9 @@
 Omorfia : AI-Driven Precision Beauty Diagnostics
-Automated Skin & Hair Analysis for Naturals Salon.
+Automated Skin & Hair Analysis 
 
 📌 Executive Summary
 
-Omorfia  is a professional-grade diagnostic platform designed for Naturals Salon to bridge the gap between AI technology and personalized retail services. By analyzing 15 unique physiological markers via a standard webcam, Omorfia generates a Consultation Summary that maps specific concerns to professional in-salon treatments and home-care products.
+Omorfia  is a professional-grade diagnostic platform designed to bridge the gap between AI technology and personalized retail services. By analyzing 15 unique physiological markers via a standard webcam, Omorfia generates a Consultation Summary that maps specific concerns to professional in-salon treatments and home-care products.
 
 🧠 The AI Diagnostic Pipeline (CV Heuristics)
 
@@ -58,4 +58,4 @@ Customer Retention: The "Diagnostic Trend" encourages repeat salon visits to tra
 
 📄 License
 
-Developed for the Naturals Salon X StartUpTN Beauty Hackathon 2026.
+Built using TRAE IDE by Muthu Shiva Kathir.
