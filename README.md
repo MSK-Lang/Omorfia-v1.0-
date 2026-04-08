@@ -31,6 +31,8 @@ Professional UI: A high-contrast, minimalist interface featuring glassmorphism a
 
 🛠️ Tech Stack
 
+IDE: Trae (Utilized Adaptive AI for complex mathematical CV pipelines).
+
 Frontend
 
 Framework: Next.js 14 (App Router)
@@ -50,12 +52,14 @@ Deployment Ready: Pydantic-based request modeling for future LLM (Claude/GPT) in
 
 📈 Business Impact
 
-Lead Conversion: Automatically maps physiological concerns to Naturals’ service inventory.
+Lead Conversion: Automatically maps physiological concerns to the Client's service inventory.
 
 Increased Ticket Size: Scientifically justifies upsells through data-backed recommendations.
 
 Customer Retention: The "Diagnostic Trend" encourages repeat salon visits to track skin and hair evolution.
 
+Potential Client base: High end Saloons, Medical Spas, Skin clinics and Dermatologists.
+
 📄 License
 
-Built using TRAE IDE by Muthu Shiva Kathir.
+Built by Muthu Shiva Kathir.
